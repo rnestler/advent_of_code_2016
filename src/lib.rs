@@ -129,6 +129,15 @@ impl Machine {
         }
     }
 
+    pub fn get_reg_mut(&mut self, reg: Register) -> &mut i32 {
+        match reg {
+            Register::A => &mut self.reg_a,
+            Register::B => &mut self.reg_b,
+            Register::C => &mut self.reg_c,
+            Register::D => &mut self.reg_d,
+        }
+    }
+
     pub fn jnz(&mut self, value: FromLocation, offset: i32) {
         let value = match value {
             FromLocation::Reg(reg) => self.get_reg(reg),
@@ -148,35 +157,17 @@ impl Machine {
     pub fn copy(&mut self, src: FromLocation, dst: Register) {
         let src = match src {
             FromLocation::Int(i) => i,
-            FromLocation::Reg(Register::A) => self.reg_a,
-            FromLocation::Reg(Register::B) => self.reg_b,
-            FromLocation::Reg(Register::C) => self.reg_c,
-            FromLocation::Reg(Register::D) => self.reg_d,
+            FromLocation::Reg(reg) => self.get_reg(reg),
         };
-        match dst {
-            Register::A => self.reg_a = src,
-            Register::B => self.reg_b = src,
-            Register::C => self.reg_c = src,
-            Register::D => self.reg_d = src,
-        }
+        *self.get_reg_mut(dst) = src;
     }
 
     pub fn decrement(&mut self, reg: Register) {
-        match reg {
-            Register::A => self.reg_a -= 1,
-            Register::B => self.reg_b -= 1,
-            Register::C => self.reg_c -= 1,
-            Register::D => self.reg_d -= 1,
-        }
+        *self.get_reg_mut(reg) -= 1;
     }
 
     pub fn increment(&mut self, reg: Register) {
-        match reg {
-            Register::A => self.reg_a += 1,
-            Register::B => self.reg_b += 1,
-            Register::C => self.reg_c += 1,
-            Register::D => self.reg_d += 1,
-        }
+        *self.get_reg_mut(reg) += 1;
     }
 }
 
