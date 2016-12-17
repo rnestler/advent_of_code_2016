@@ -141,6 +141,8 @@ impl Machine {
             } else {
                 self.pc -= (-offset) as usize;
             }
+            // pc will get autoincremented afterwards
+            self.pc -= 1;
         }
     }
 
