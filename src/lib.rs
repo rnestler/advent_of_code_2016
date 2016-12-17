@@ -30,7 +30,7 @@ pub enum Instruction {
     Inc(Register),
     Dec(Register),
     Cpy(FromLocation, Register),
-    Jnz(Register, i32),
+    Jnz(FromLocation, i32),
 }
 
 impl FromStr for Instruction {
@@ -111,7 +111,7 @@ impl Machine {
             Instruction::Dec(reg) => self.decrement(reg),
             Instruction::Inc(reg) => self.increment(reg),
             Instruction::Cpy(src, dst) => self.copy(src, dst),
-            Instruction::Jnz(reg, offset) => self.jnz(reg, offset),
+            Instruction::Jnz(value, offset) => self.jnz(value, offset),
         }
         self.pc += 1;
         if self.pc >= self.code.len() {
@@ -130,8 +130,12 @@ impl Machine {
         }
     }
 
-    pub fn jnz(&mut self, reg: Register, offset: i32) {
-        if self.get_reg(reg) != 0 {
+    pub fn jnz(&mut self, value: FromLocation, offset: i32) {
+        let value = match value {
+            FromLocation::Reg(reg) => self.get_reg(reg),
+            FromLocation::Int(val) => val,
+        };
+        if value != 0 {
             if offset > 0 {
                 self.pc += offset as usize;
             } else {
@@ -185,28 +189,34 @@ mod test {
         let instruction: Instruction = "cpy 41 a".parse().unwrap();
         assert_eq!(instruction, Instruction::Cpy(FromLocation::Int(41), Register::A));
     }
-    
+
     #[test]
     fn parse_inc() {
         let instruction: Instruction = "inc a".parse().unwrap();
         assert_eq!(instruction, Instruction::Inc(Register::A));
     }
-   
+
     #[test]
     fn parse_dec() {
         let instruction: Instruction = "dec a".parse().unwrap();
         assert_eq!(instruction, Instruction::Dec(Register::A));
     }
-   
+
     #[test]
     fn parse_jnz() {
         let instruction: Instruction = "jnz a 2".parse().unwrap();
-        assert_eq!(instruction, Instruction::Jnz(Register::A, 2));
+        assert_eq!(instruction, Instruction::Jnz(FromLocation::Reg(Register::A), 2));
+    }
+
+    #[test]
+    fn parse_jnz_2() {
+        let instruction: Instruction = "jnz 1 5".parse().unwrap();
+        assert_eq!(instruction, Instruction::Jnz(FromLocation::Int(1), 5));
     }
 
     #[test]
     fn sample() {
-        let input = 
+        let input =
 "cpy 41 a
 inc a
 inc a
