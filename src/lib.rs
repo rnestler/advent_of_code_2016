@@ -6,7 +6,6 @@ pub fn puzzle(input: &str) -> i32 {
     }).collect();
     let mut machine = Machine::new(code);
     while let Some(()) = machine.execute() {
-        println!("{:?}", machine);
     }
     machine.get_reg(Register::A)
 }
