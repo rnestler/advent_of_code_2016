@@ -5,8 +5,7 @@ pub fn puzzle(input: &str) -> i32 {
         Instruction::from_str(v).expect(&format!("Failed to parse line {}: {}", k, v))
     }).collect();
     let mut machine = Machine::new(code);
-    while let Some(()) = machine.execute() {
-    }
+    machine.run();
     machine.get_reg(Register::A)
 }
 
@@ -102,6 +101,11 @@ impl Machine {
 
     pub fn new(code: Vec<Instruction>) -> Machine {
         Machine { code: code, ..Default::default() }
+    }
+
+    pub fn run(&mut self) {
+        while let Some(()) = self.execute() {
+        }
     }
 
     pub fn execute(&mut self) -> Option<()> {
