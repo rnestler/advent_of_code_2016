@@ -1,8 +1,9 @@
 extern crate puzzle1;
 
-use puzzle1::puzzle;
+use puzzle1::{puzzle_part1, puzzle_part2};
 
 fn main() {
     let input = include_str!("../input.txt");
-    println!("{}", puzzle(input));
+    println!("part one: {}", puzzle_part1(input));
+    println!("part two: {}", puzzle_part2(input));
 }

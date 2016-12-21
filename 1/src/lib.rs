@@ -66,15 +66,23 @@ impl Direction {
     }
 }
 
+#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct Position {
     pub direction: Direction,
     pub x: i32,
     pub y: i32,
+    pub visited_positions: Vec<(i32, i32)>,
+    pub first_revisited_pos: Option<(i32, i32)>,
 }
 
 impl Position {
     pub fn new() -> Position {
-        Position{direction: Direction::North, x: 0, y:0}
+        Position {
+            direction: Direction::North,
+            x: 0, y:0,
+            visited_positions: vec![(0,0)],
+            first_revisited_pos: None,
+        }
     }
 
     pub fn apply_command(&mut self, command: Command) {
@@ -83,20 +91,38 @@ impl Position {
     }
 
     pub fn walk(&mut self, distance: i32) {
-        match self.direction {
-            Direction::North => self.y += distance,
-            Direction::East => self.x += distance,
-            Direction::South => self.y -= distance,
-            Direction::West => self.x -= distance,
+        for _ in 0..distance {
+            self.step();
         }
+    }
+
+    pub fn step(&mut self) {
+        match self.direction {
+            Direction::North => self.y += 1,
+            Direction::East => self.x += 1,
+            Direction::South => self.y -= 1,
+            Direction::West => self.x -= 1,
+        }
+        if self.first_revisited_pos.is_none() && self.has_revisited() {
+            self.first_revisited_pos = Some((self.x, self.y));
+        }
+        self.visited_positions.push((self.x, self.y));
     }
 
     pub fn distance(&self) -> i32 {
         self.x.abs() + self.y.abs()
     }
+
+    pub fn has_revisited(&self) -> bool {
+        self.visited_positions.iter().any(|v| self.compare_x_y(&v))
+    }
+
+    pub fn compare_x_y(&self, other: &(i32, i32)) -> bool {
+        self.x == other.0 && self.y == other.1
+    }
 }
 
-pub fn puzzle(input: &str) -> i32 {
+pub fn puzzle_part1(input: &str) -> i32 {
     let mut position = Position::new();
     for command in input.split(',') {
         let command: Command = command.trim().parse().expect("parsing failed");
@@ -105,6 +131,18 @@ pub fn puzzle(input: &str) -> i32 {
     position.distance()
 }
 
+pub fn puzzle_part2(input: &str) -> i32 {
+    let mut position = Position::new();
+    for command in input.split(',') {
+        let command: Command = command.trim().parse().expect("parsing failed");
+        position.apply_command(command);
+        // check if we revisit a position
+        if let Some(first_revisited_pos) = position.first_revisited_pos {
+            return first_revisited_pos.0.abs() + first_revisited_pos.1.abs();
+        }
+    }
+    0
+}
 
 
 #[cfg(test)]
@@ -134,21 +172,28 @@ mod test {
     #[test]
     fn test_sample_input() {
         let input = "R2, L3";
-        let position = puzzle(input);
+        let position = puzzle_part1(input);
         assert_eq!(5, position);
     }
 
     #[test]
     fn test_sample_input_2() {
         let input = "R2, R2, R2";
-        let position = puzzle(input);
+        let position = puzzle_part1(input);
         assert_eq!(2, position);
     }
 
     #[test]
     fn test_sample_input_3() {
         let input = "R5, L5, R5, R3";
-        let position = puzzle(input);
+        let position = puzzle_part1(input);
         assert_eq!(12, position);
+    }
+
+    #[test]
+    fn test_sample_input_part_two() {
+        let input = "R8, R4, R4, R8";
+        let position = puzzle_part2(input);
+        assert_eq!(4, position);
     }
 }
